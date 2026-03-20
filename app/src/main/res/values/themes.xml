@@ -1,38 +1,45 @@
 <resources>
-    <!-- Base application theme: use a Dark Material3 parent to force dark theme across the app -->
+    <!-- Base application theme: force dark theme across the app -->
     <style name="Base.Theme.Wallpaper" parent="Theme.Material3.Dark.NoActionBar">
-        <!-- Dark theme customizations -->
-        <item name="android:colorBackground">@color/black</item>
+        <!-- App-wide typography (system fonts; safe + no extra assets) -->
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+
+        <!-- System bars -->
         <item name="android:statusBarColor">@color/black</item>
         <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Material colors (premium dark + warm red accent) -->
+        <item name="android:colorBackground">@color/black</item>
         <item name="colorPrimary">@color/accent</item>
         <item name="colorPrimaryVariant">@color/accent_dark</item>
         <item name="colorAccent">@color/accent</item>
+
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorOnSurface">@color/light_text</item>
         <item name="colorOnPrimary">@color/black</item>
+
         <item name="android:textColorPrimary">@color/light_text</item>
-        <item name="android:textColorSecondary">@color/light_text</item>
-        <!-- App-wide font family for clean, modern look -->
-        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textColorSecondary">@color/nav_item_inactive</item>
     </style>
 
     <!-- App theme (dark) -->
     <style name="Theme.Wallpaper" parent="Base.Theme.Wallpaper" />
 
-    <!-- Launch (splash) theme with a dark background drawable -->
+    <!-- Splash theme: beautiful animated entrance -->
     <style name="Theme.Wallpaper.Splash" parent="Theme.Wallpaper">
-        <!-- Use a solid color for the launch background to avoid resource resolution issues -->
         <item name="android:windowBackground">@color/black</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
-
-    <!-- Dialog theme for the download popup: transparent window with centered card -->
 
     <!-- Studio tab label style -->
     <style name="StudioTabText" parent="TextAppearance.Design.Tab">
         <item name="android:textSize">11sp</item>
         <item name="textAllCaps">false</item>
         <item name="android:letterSpacing">0.02</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
-
 
 </resources>

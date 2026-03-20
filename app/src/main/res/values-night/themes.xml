@@ -1,7 +1,4 @@
 <resources>
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Wallpaper" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
-    </style>
+    <!-- Keep night theme consistent with the forced-dark base theme in values/themes.xml. -->
+    <style name="Base.Theme.Wallpaper" parent="Theme.Material3.Dark.NoActionBar" />
 </resources>

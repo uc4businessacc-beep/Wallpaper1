@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable block: Text Opacity -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#161616"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Text Opacity"
+            android:textColor="@color/light_text"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tv_opacity_val"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="100%"
+            android:textColor="@color/accent"
+            android:textSize="12sp"
+            android:gravity="end" />
+
+        <TextView
+            android:id="@+id/btn_reset_opacity"
+            android:layout_width="@dimen/studio_reset_touch"
+            android:layout_height="@dimen/studio_reset_touch"
+            android:text="↺"
+            android:textColor="@color/accent"
+            android:textSize="@dimen/studio_reset_icon"
+            android:gravity="center"
+            android:background="@drawable/studio_reset_bg"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/seek_opacity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="100"
+        android:layout_marginTop="6dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp" />
+
+</LinearLayout>

@@ -1,4 +1,4 @@
-package com.infinity.wallpaper.ui;
+package com.infinity.wallpaper.ui.wallpapers;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,45 +12,81 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.infinity.wallpaper.R;
-import com.infinity.wallpaper.ui.wallpapers.RandomFragment;
-import com.infinity.wallpaper.ui.wallpapers.WallpapersPagerAdapter;
 
-public class WallpapersFragment extends Fragment {
+public class CategoryViewAllTabsFragment extends Fragment {
 
-    private ViewPager2 viewPager;
+    private static final String ARG_CATEGORY = "arg_category";
 
-    private final String[] tabTitles = new String[]{"Recent", "Premium", "Random"};
+    private final String[] tabTitles = new String[]{"All", "Free", "Premium"};
     private final int[] tabIcons = new int[]{
             R.drawable.ic_tab_recent,
-            R.drawable.ic_tab_premium,
-            R.drawable.ic_tab_random
+            R.drawable.ic_tab_recent,
+            R.drawable.ic_tab_premium
     };
+
+    public static CategoryViewAllTabsFragment newInstance(String category) {
+        CategoryViewAllTabsFragment f = new CategoryViewAllTabsFragment();
+        Bundle b = new Bundle();
+        b.putString(ARG_CATEGORY, category);
+        f.setArguments(b);
+        return f;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_wallpapers, container, false);
+        return inflater.inflate(R.layout.fragment_category_viewall_tabs, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewPager = view.findViewById(R.id.view_pager);
-        TabLayout tabLayout = view.findViewById(R.id.tab_layout);
-        View tabIndicator = view.findViewById(R.id.tab_indicator);
+        final String category = getArguments() != null ? getArguments().getString(ARG_CATEGORY) : null;
 
-        // inside the shared oval container, we don't want extra padding
+        TextView title = view.findViewById(R.id.category_title);
+        if (CategoryAllFragment.TOKEN_PREMIUM.equals(category)) {
+            // This is the global Premium collection: hide the category title entirely
+            title.setText("");
+            title.setVisibility(View.GONE);
+        } else if (CategoryAllFragment.TOKEN_RANDOM.equals(category)) {
+            title.setText(getString(R.string.random));
+        } else if (category == null || category.trim().isEmpty()) {
+            title.setText(getString(R.string.all));
+        } else {
+            title.setText(category);
+        }
+
+        ViewPager2 viewPager = view.findViewById(R.id.category_viewpager);
+        TabLayout tabLayout = view.findViewById(R.id.category_tabs);
+        View tabIndicator = view.findViewById(R.id.category_tab_indicator);
+
         tabLayout.setPadding(0, 0, 0, 0);
         tabLayout.setTabMode(TabLayout.MODE_FIXED);
 
-        WallpapersPagerAdapter adapter = new WallpapersPagerAdapter(requireActivity());
-        viewPager.setAdapter(adapter);
+        viewPager.setAdapter(new FragmentStateAdapter(this) {
+            @NonNull
+            @Override
+            public Fragment createFragment(int position) {
+                if (position == 1) {
+                    return CategoryAllFragment.newInstance(category, CategoryFilter.FREE);
+                } else if (position == 2) {
+                    return CategoryAllFragment.newInstance(category, CategoryFilter.PREMIUM);
+                }
+                return CategoryAllFragment.newInstance(category, CategoryFilter.ALL);
+            }
+
+            @Override
+            public int getItemCount() {
+                return 3;
+            }
+        });
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             View tabView = LayoutInflater.from(requireContext()).inflate(R.layout.custom_tab, tabLayout, false);
@@ -62,8 +98,6 @@ public class WallpapersFragment extends Fragment {
                 icon.setImageResource(tabIcons[position]);
             }
             text.setText(tabTitles[position]);
-
-            // ensure the tab segment fills available height
             root.setMinimumHeight(dp(40));
 
             if (position == 0) {
@@ -86,12 +120,7 @@ public class WallpapersFragment extends Fragment {
                     TextView text = custom.findViewById(R.id.tab_text);
                     applyTabSelected(root, icon, text);
                 }
-
                 moveTabIndicatorTo(tabLayout, tabIndicator, tab.getPosition());
-
-                if (tab.getPosition() == 2) {
-                    refreshRandomTab();
-                }
             }
 
             @Override
@@ -107,13 +136,9 @@ public class WallpapersFragment extends Fragment {
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 2) {
-                    refreshRandomTab();
-                }
             }
         });
 
-        // Also realign the indicator while ViewPager is settling/swiping
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
@@ -147,7 +172,6 @@ public class WallpapersFragment extends Fragment {
         if (indicator == null || tabLayout == null) return;
         if (tabLayout.getTabCount() == 0) return;
 
-        // Prefer the actual tab view geometry for perfect alignment
         View tabView = null;
         if (tabLayout.getChildCount() > 0 && tabLayout.getChildAt(0) instanceof ViewGroup) {
             ViewGroup sliding = (ViewGroup) tabLayout.getChildAt(0);
@@ -157,7 +181,6 @@ public class WallpapersFragment extends Fragment {
         }
 
         if (tabView == null) {
-            // Fallback to equal width
             int width = tabLayout.getWidth();
             if (width == 0) return;
             float tabWidth = (float) width / Math.max(1, tabLayout.getTabCount());
@@ -167,27 +190,9 @@ public class WallpapersFragment extends Fragment {
             return;
         }
 
-        // Compute indicator X inside the same parent coordinates (tabLayout)
         float targetCenter = tabView.getLeft() + tabView.getWidth() / 2f;
         float indicatorHalf = indicator.getWidth() / 2f;
         float targetX = targetCenter - indicatorHalf;
         indicator.animate().x(targetX).setDuration(180).start();
-    }
-
-    private void refreshRandomTab() {
-        if (viewPager == null) return;
-
-        Fragment fragment = getChildFragmentManager().findFragmentByTag("f" + 2);
-        if (fragment instanceof RandomFragment) {
-            ((RandomFragment) fragment).refreshContent();
-            return;
-        }
-
-        for (Fragment f : getChildFragmentManager().getFragments()) {
-            if (f instanceof RandomFragment) {
-                ((RandomFragment) f).refreshContent();
-                return;
-            }
-        }
     }
 }

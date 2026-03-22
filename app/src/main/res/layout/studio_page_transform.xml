@@ -44,12 +44,13 @@
 
                 <TextView
                     android:id="@+id/btn_reset_curve"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
                     android:text="↺"
                     android:textColor="@color/accent"
-                    android:textSize="16sp"
-                    android:paddingStart="8dp"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
                     android:clickable="true"
                     android:focusable="true" />
             </LinearLayout>
@@ -79,9 +80,11 @@
                     android:layout_width="40dp" android:layout_height="wrap_content"
                     android:text="0°" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_rot"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_rot"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -102,9 +105,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="100%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_sx"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_sx"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -125,9 +130,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="100%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_sy"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_sy"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -148,9 +155,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="0%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_skewh"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_skewh"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -171,9 +180,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="0%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_skewv"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_skewv"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -194,9 +205,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="0%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_skewbh"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_skewbh"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -217,9 +230,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="0%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_skewlv"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_skewlv"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -240,9 +255,11 @@
                     android:layout_width="44dp" android:layout_height="wrap_content"
                     android:text="0%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
                 <TextView android:id="@+id/btn_reset_skewlo"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
-                    android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent" android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center" android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_skewlo"
                 android:layout_width="match_parent" android:layout_height="wrap_content"

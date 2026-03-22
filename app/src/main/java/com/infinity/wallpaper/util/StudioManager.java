@@ -126,6 +126,7 @@ public final class StudioManager {
     public static void setShadowEnabled(Context ctx, boolean en)  { putTime(ctx, "shadowEnabled", en); }
     public static void setShadowX(Context ctx, float x)           { putTime(ctx, "shadowX", x); }
     public static void setShadowY(Context ctx, float y)           { putTime(ctx, "shadowY", y); }
+    public static void setShadowOpacity(Context ctx, float op)    { putTime(ctx, "shadowOpacity", op); }
     public static void setStrokeEnabled(Context ctx, boolean en)  { putTime(ctx, "strokeEnabled", en); }
     public static void setStrokeWidth(Context ctx, float w)       { putTime(ctx, "strokeWidth", w); }
     public static void setStrokeColor(Context ctx, String c)      { putTime(ctx, "strokeColor", c); }

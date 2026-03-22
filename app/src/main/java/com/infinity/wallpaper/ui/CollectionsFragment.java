@@ -1,18 +1,11 @@
 package com.infinity.wallpaper.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,8 +28,6 @@ public class CollectionsFragment extends Fragment {
 
     private RecyclerView recyclerSections;
     private SwipeRefreshLayout swipeRefresh;
-    private View refreshIndicatorContainer;
-    private com.infinity.wallpaper.ui.common.PulseRefreshView pulseRefresh;
     private final List<String> categoryOrder = new ArrayList<>();
     private boolean isRefreshing = false;
 
@@ -50,11 +41,9 @@ public class CollectionsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         recyclerSections = view.findViewById(R.id.recycler_sections);
         swipeRefresh = view.findViewById(R.id.swipe_refresh_collections);
-        refreshIndicatorContainer = view.findViewById(R.id.refresh_indicator_container);
-        pulseRefresh = view.findViewById(R.id.pulse_refresh);
 
         // Hide the default SwipeRefreshLayout indicator - we use our custom one
-        swipeRefresh.setProgressViewOffset(false, -200, -200);
+        swipeRefresh.setProgressViewOffset(false, -500, -500);
         swipeRefresh.setOnRefreshListener(this::refreshWithZigzag);
 
         loadCategories();
@@ -68,78 +57,15 @@ public class CollectionsFragment extends Fragment {
         }
         isRefreshing = true;
 
-        // Show custom refresh indicator
-        showRefreshIndicator();
 
-        // Animate fade-out before refreshing
-        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(recyclerSections, "alpha", 1f, 0.3f);
-        fadeOut.setDuration(200);
-        fadeOut.setInterpolator(new AccelerateDecelerateInterpolator());
-        fadeOut.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                // Clear and reload categories
-                categoryOrder.clear();
-                loadCategories();
-
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    loadAllWallpapersGroupedRefresh();
-                }, 200);
-            }
-        });
-        fadeOut.start();
-    }
-
-    private void showRefreshIndicator() {
-        if (refreshIndicatorContainer == null) return;
-        refreshIndicatorContainer.setVisibility(View.VISIBLE);
-        refreshIndicatorContainer.setTranslationY(-refreshIndicatorContainer.getHeight());
-        refreshIndicatorContainer.animate()
-                .translationY(0)
-                .setDuration(300)
-                .setInterpolator(new OvershootInterpolator(0.5f))
-                .start();
-        if (pulseRefresh != null) {
-            pulseRefresh.startAnimation();
-        }
-    }
-
-    private void hideRefreshIndicator() {
-        if (refreshIndicatorContainer == null) return;
-        refreshIndicatorContainer.animate()
-                .translationY(-refreshIndicatorContainer.getHeight())
-                .setDuration(250)
-                .setInterpolator(new AccelerateDecelerateInterpolator())
-                .withEndAction(() -> {
-                    refreshIndicatorContainer.setVisibility(View.GONE);
-                    if (pulseRefresh != null) {
-                        pulseRefresh.stopAnimation();
-                    }
-                })
-                .start();
+        // Clear and reload categories + wallpapers (no overlay / no animations)
+        categoryOrder.clear();
+        loadCategories();
+        loadAllWallpapersGroupedRefresh();
     }
 
     private void animateRefreshComplete() {
         if (!isAdded()) return;
-
-        // Hide custom refresh indicator
-        hideRefreshIndicator();
-
-        // Slide up + fade in animation
-        recyclerSections.setTranslationY(50f);
-        recyclerSections.setAlpha(0.3f);
-
-        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(recyclerSections, "alpha", 0.3f, 1f);
-        fadeIn.setDuration(350);
-        fadeIn.setInterpolator(new AccelerateDecelerateInterpolator());
-
-        ObjectAnimator slideUp = ObjectAnimator.ofFloat(recyclerSections, "translationY", 50f, 0f);
-        slideUp.setDuration(400);
-        slideUp.setInterpolator(new OvershootInterpolator(0.8f));
-
-        fadeIn.start();
-        slideUp.start();
-
         swipeRefresh.setRefreshing(false);
         isRefreshing = false;
     }
@@ -163,10 +89,8 @@ public class CollectionsFragment extends Fragment {
             }
             buildAndShowSections(new ArrayList<>(dedupe.values()));
 
-            // Animate the refresh completion
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                animateRefreshComplete();
-            }, 100);
+            // Immediately finish refresh (no delayed animation)
+            animateRefreshComplete();
         });
     }
 
@@ -296,8 +220,7 @@ public class CollectionsFragment extends Fragment {
         // set up sections adapter on the UI thread
         requireActivity().runOnUiThread(() -> {
             CategorySectionsAdapter sectionsAdapter = new CategorySectionsAdapter(requireContext(), byCategory, category -> {
-                // open category page as a full screen fragment (preserve bottom nav behavior similar to Settings)
-                com.infinity.wallpaper.ui.wallpapers.CategoryAllFragment frag = com.infinity.wallpaper.ui.wallpapers.CategoryAllFragment.newInstance(category);
+                com.infinity.wallpaper.ui.wallpapers.CategoryViewAllTabsFragment frag = com.infinity.wallpaper.ui.wallpapers.CategoryViewAllTabsFragment.newInstance(category);
                 requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.nav_host_fragment, frag)
                         .addToBackStack(null)

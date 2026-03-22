@@ -44,12 +44,13 @@
 
                 <TextView
                     android:id="@+id/btn_reset_size"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
                     android:text="↺"
                     android:textColor="@color/accent"
-                    android:textSize="16sp"
-                    android:paddingStart="8dp"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
                     android:clickable="true"
                     android:focusable="true" />
             </LinearLayout>
@@ -97,12 +98,13 @@
 
                 <TextView
                     android:id="@+id/btn_reset_posx"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
                     android:text="↺"
                     android:textColor="@color/accent"
-                    android:textSize="16sp"
-                    android:paddingStart="8dp"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
                     android:clickable="true"
                     android:focusable="true" />
             </LinearLayout>
@@ -150,12 +152,13 @@
 
                 <TextView
                     android:id="@+id/btn_reset_posy"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
                     android:text="↺"
                     android:textColor="@color/accent"
-                    android:textSize="16sp"
-                    android:paddingStart="8dp"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
                     android:clickable="true"
                     android:focusable="true" />
             </LinearLayout>
@@ -168,6 +171,9 @@
                 android:progress="65"
                 android:layout_marginTop="6dp" />
         </LinearLayout>
+
+        <!-- Text Opacity (moved here from Effects) -->
+        <include layout="@layout/studio_basics_opacity_block" />
 
     </LinearLayout>
 

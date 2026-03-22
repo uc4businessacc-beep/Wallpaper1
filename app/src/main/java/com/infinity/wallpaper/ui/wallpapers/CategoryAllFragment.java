@@ -21,7 +21,6 @@ import com.infinity.wallpaper.R;
 import com.infinity.wallpaper.WallpaperApplier;
 import com.infinity.wallpaper.data.WallpaperItem;
 import com.infinity.wallpaper.ui.AdminFragment;
-import com.infinity.wallpaper.ui.common.WallpaperPreviewDialog;
 import com.infinity.wallpaper.ui.common.ZigzagLoadingDialog;
 import com.infinity.wallpaper.util.SelectedWallpaperStore;
 
@@ -33,14 +32,20 @@ import java.util.Map;
 public class CategoryAllFragment extends Fragment {
 
     private static final String ARG_CATEGORY = "arg_category";
+    private static final String ARG_FILTER = "arg_filter";
     public static final String TOKEN_PREMIUM = "__PREMIUM__";
     public static final String TOKEN_RANDOM = "__RANDOM__";
     private Dialog activeDialog = null;
 
     public static CategoryAllFragment newInstance(String category) {
+        return newInstance(category, CategoryFilter.ALL);
+    }
+
+    public static CategoryAllFragment newInstance(String category, String filter) {
         CategoryAllFragment f = new CategoryAllFragment();
         Bundle b = new Bundle();
         b.putString(ARG_CATEGORY, category);
+        b.putString(ARG_FILTER, filter);
         f.setArguments(b);
         return f;
     }
@@ -54,6 +59,9 @@ public class CategoryAllFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         RecyclerView recycler = view.findViewById(R.id.recycler_all);
+        // remove blue overscroll glow
+        recycler.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
         TextView emptyView = view.findViewById(R.id.empty_all);
         View header = view.findViewById(R.id.header_container);
         TextView headerTitle = view.findViewById(R.id.header_title);
@@ -110,51 +118,45 @@ public class CategoryAllFragment extends Fragment {
             if (item != null) adapter.setSelectedId(item.id);
         });
 
-        // adjust header height to 15% of screen
-        int headerHeight = Math.round(getResources().getDisplayMetrics().heightPixels * 0.15f);
-        ViewGroup.LayoutParams lp = header.getLayoutParams();
-
-        // update title based on arg
         String cat = getArguments() != null ? getArguments().getString(ARG_CATEGORY) : null;
-        if (cat == null) {
-            cat = getString(R.string.all);
-        } else if (TOKEN_RANDOM.equals(cat)) {
-            headerTitle.setText(R.string.random);
-        } else if (TOKEN_PREMIUM.equals(cat)) {
-            // For the premium page we keep functionality but do not show the word "Premium".
-            headerTitle.setText("");
-        } else {
-            headerTitle.setText(cat);
-        }
+        String filter = getArguments() != null ? getArguments().getString(ARG_FILTER, CategoryFilter.ALL) : CategoryFilter.ALL;
 
-        // For premium page: hide header entirely since no title is shown
-        if (TOKEN_PREMIUM.equals(cat)) {
+        // Header/title behavior:
+        // - In ViewAll tabs screen, the category title is shown above the tab bar, so hide header for ALL/FREE.
+        // - Still hide header for PREMIUM token (category_title already says Premium).
+        boolean shouldHideHeader = CategoryFilter.ALL.equals(filter) || CategoryFilter.FREE.equals(filter) || TOKEN_PREMIUM.equals(cat) || CategoryFilter.PREMIUM.equals(filter);
+        if (shouldHideHeader) {
             header.setVisibility(View.GONE);
             // Remove top margin so cards start from top
-            android.view.ViewGroup.MarginLayoutParams rlp =
-                    (android.view.ViewGroup.MarginLayoutParams) recycler.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams rlp = (android.view.ViewGroup.MarginLayoutParams) recycler.getLayoutParams();
             rlp.topMargin = 0;
             recycler.setLayoutParams(rlp);
         } else {
+            // keep legacy header for any other uses
+            int headerHeight = Math.round(getResources().getDisplayMetrics().heightPixels * 0.15f);
+            ViewGroup.LayoutParams lp = header.getLayoutParams();
             lp.height = headerHeight;
             header.setLayoutParams(lp);
-        }
 
-        // collapse header on scroll: compute vertical offset dynamically so scrolling up restores header
-        recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                super.onScrolled(rv, dx, dy);
-                if (header.getVisibility() != View.VISIBLE) return;
-                int offset = rv.computeVerticalScrollOffset();
-                float t = Math.min(1f, offset / (float) headerHeight);
-                float scale = 1f - 0.4f * t; // shrink to 60%
-                header.setPivotX(0f);
-                header.setPivotY(0f);
-                header.setScaleX(scale);
-                header.setScaleY(scale);
-            }
-        });
+            if (cat == null) headerTitle.setText(getString(R.string.all));
+            else if (TOKEN_RANDOM.equals(cat)) headerTitle.setText(R.string.random);
+            else headerTitle.setText(cat);
+
+            recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                    super.onScrolled(rv, dx, dy);
+                    if (header.getVisibility() != View.VISIBLE) return;
+                    int offset = rv.computeVerticalScrollOffset();
+                    float t = Math.min(1f, offset / (float) headerHeight);
+                    float scale = 1f - 0.4f * t;
+                    header.setPivotX(0f);
+                    header.setPivotY(0f);
+                    header.setScaleX(scale);
+                    header.setScaleY(scale);
+                }
+            });
+        }
 
         loadWallpapers(adapter, emptyView);
     }
@@ -167,6 +169,14 @@ public class CategoryAllFragment extends Fragment {
     private void loadWallpapers(RecentWallpaperAdapter adapter, TextView emptyView) {
         adapter.setLoading(true);
         String cat = getArguments() != null ? getArguments().getString(ARG_CATEGORY) : null;
+        String filter = getArguments() != null ? getArguments().getString(ARG_FILTER, CategoryFilter.ALL) : CategoryFilter.ALL;
+
+        // Global Premium screen should always be premium-only.
+        if (TOKEN_PREMIUM.equals(cat)) {
+            filter = CategoryFilter.PREMIUM;
+        }
+        final String finalFilter = filter;
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("wallpapers").get().addOnCompleteListener(task -> {
             if (!isAdded()) return;
@@ -177,13 +187,33 @@ public class CategoryAllFragment extends Fragment {
                     try {
                         WallpaperItem w = doc.toObject(WallpaperItem.class);
                         w.id = doc.getId();
-                        if (TOKEN_PREMIUM.equals(cat)) {
-                            if (w.isPremium) list.add(w);
-                        } else if (TOKEN_RANDOM.equals(cat)) {
+
+                        // Special screens
+                        if (TOKEN_RANDOM.equals(cat)) {
+                            // random ignores category and filter
                             list.add(w);
-                        } else {
-                            if (w.category != null && w.category.equalsIgnoreCase(cat)) list.add(w);
+                            continue;
                         }
+
+                        boolean matchesCategory;
+                        if (TOKEN_PREMIUM.equals(cat)) {
+                            // legacy premium token page (not per-category)
+                            matchesCategory = true;
+                        } else {
+                            matchesCategory = (cat != null && w.category != null && w.category.equalsIgnoreCase(cat));
+                        }
+                        if (!matchesCategory) continue;
+
+                        // Apply tab filter
+                        if (CategoryFilter.PREMIUM.equals(finalFilter)) {
+                            if (w.isPremium) list.add(w);
+                        } else if (CategoryFilter.FREE.equals(finalFilter)) {
+                            if (!w.isPremium) list.add(w);
+                        } else {
+                            // ALL
+                            list.add(w);
+                        }
+
                     } catch (Exception ex) {
                         Log.w("CategoryAllFragment", "Skipping invalid wallpaper doc", ex);
                     }

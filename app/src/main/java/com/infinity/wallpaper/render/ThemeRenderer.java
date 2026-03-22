@@ -237,8 +237,10 @@ public class ThemeRenderer {
             if (glowColor == null || glowColor.isEmpty()) glowColor = hourColor;
             // Shadow
             boolean shadowEnabled = timeObj.optBoolean("shadowEnabled", false);
-            float shadowX = (float) timeObj.optDouble("shadowX", 4);
-            float shadowY2 = (float) timeObj.optDouble("shadowY", 4);
+            float shadowX = (float) timeObj.optDouble("shadowX", 0);
+            float shadowY = (float) timeObj.optDouble("shadowY", 0);
+            float shadowOpacity = (float) timeObj.optDouble("shadowOpacity", 1.0);
+            shadowOpacity = Math.max(0f, Math.min(1f, shadowOpacity));
 
             // Stroke / fill
             boolean strokeEnabled = timeObj.optBoolean("strokeEnabled", false);
@@ -297,25 +299,27 @@ public class ThemeRenderer {
             // Shadow paints - black text with same dimensions, drawn beneath main text
             Paint hourShadowPaint = null, minShadowPaint = null, secShadowPaint = null;
             if (shadowEnabled) {
-                // Create dedicated shadow paints - solid black, same font/size
+                // Use shadowOpacity (NOT text opacity) so the shadow opacity slider works.
+                int shA = (int) (shadowOpacity * 255);
+
                 hourShadowPaint = new Paint(hourPaint);
                 hourShadowPaint.setShader(null);  // No gradient on shadow
                 hourShadowPaint.clearShadowLayer();
                 hourShadowPaint.setColor(Color.BLACK);
-                hourShadowPaint.setAlpha((int)(opacity * 255));
+                hourShadowPaint.setAlpha(shA);
 
                 minShadowPaint = new Paint(minPaint);
                 minShadowPaint.setShader(null);
                 minShadowPaint.clearShadowLayer();
                 minShadowPaint.setColor(Color.BLACK);
-                minShadowPaint.setAlpha((int)(opacity * 255));
+                minShadowPaint.setAlpha(shA);
 
                 if (secPaint != null) {
                     secShadowPaint = new Paint(secPaint);
                     secShadowPaint.setShader(null);
                     secShadowPaint.clearShadowLayer();
                     secShadowPaint.setColor(Color.BLACK);
-                    secShadowPaint.setAlpha((int)(opacity * 255));
+                    secShadowPaint.setAlpha(shA);
                 }
             }
 
@@ -672,7 +676,7 @@ public class ThemeRenderer {
                     if (hourGlow != null) ad.draw(hourGlow, hour);
                     if (hourStrokePaint != null) ad.draw(hourStrokePaint, hour);
                     if (fillEnabled || needsFallback) ad.draw(hourPaint, hour);
-                    if (hourShadowPaint != null) ad.drawShadow(hourShadowPaint, hourPaint, hour, shadowX, shadowY2);
+                    if (hourShadowPaint != null) ad.drawShadow(hourShadowPaint, hourPaint, hour, shadowX, shadowY);
                 } else {
                     ad.skip(hourPaint, hour);
                 }
@@ -682,7 +686,7 @@ public class ThemeRenderer {
                     if (drawHourMinSep) {
                         if (strokeEnabled && "both".equals(strokeTarget) && minStrokePaint != null) ad.draw(minStrokePaint, sep);
                         if (fillEnabled || needsFallback) ad.draw(hourPaint, sep);
-                        if (hourShadowPaint != null) ad.drawShadow(hourShadowPaint, hourPaint, sep, shadowX, shadowY2);
+                        if (hourShadowPaint != null) ad.drawShadow(hourShadowPaint, hourPaint, sep, shadowX, shadowY);
                     } else {
                         ad.skip(hourPaint, sep);
                     }
@@ -693,7 +697,7 @@ public class ThemeRenderer {
                     if (minGlow != null) ad.draw(minGlow, minute);
                     if (minStrokePaint != null) ad.draw(minStrokePaint, minute);
                     if (fillEnabled || needsFallback) ad.draw(minPaint, minute);
-                    if (minShadowPaint != null) ad.drawShadow(minShadowPaint, minPaint, minute, shadowX, shadowY2);
+                    if (minShadowPaint != null) ad.drawShadow(minShadowPaint, minPaint, minute, shadowX, shadowY);
                 } else {
                     ad.skip(minPaint, minute);
                 }
@@ -704,7 +708,7 @@ public class ThemeRenderer {
                         if (drawSecSep) {
                             if (strokeEnabled && "both".equals(strokeTarget) && secStrokePaint != null) ad.draw(secStrokePaint, sep);
                             if (fillEnabled || needsFallback) ad.draw(secPaint, sep);
-                            if (secShadowPaint != null) ad.drawShadow(secShadowPaint, secPaint, sep, shadowX, shadowY2);
+                            if (secShadowPaint != null) ad.drawShadow(secShadowPaint, secPaint, sep, shadowX, shadowY);
                         } else {
                             ad.skip(secPaint, sep);
                         }
@@ -714,7 +718,7 @@ public class ThemeRenderer {
                         if (secGlow != null) ad.draw(secGlow, second);
                         if (secStrokePaint != null) ad.draw(secStrokePaint, second);
                         if (fillEnabled || needsFallback) ad.draw(secPaint, second);
-                        if (secShadowPaint != null) ad.drawShadow(secShadowPaint, secPaint, second, shadowX, shadowY2);
+                        if (secShadowPaint != null) ad.drawShadow(secShadowPaint, secPaint, second, shadowX, shadowY);
                     }
                 }
 
@@ -730,7 +734,7 @@ public class ThemeRenderer {
                 if (fillEnabled || needsFallback) canvas.drawText(hour, hourDrawX, hourDrawY, hourPaint);
                 // Black shadow text drawn ABOVE the normal text
                 if (hourShadowPaint != null) {
-                    canvas.drawText(hour, hourDrawX + shadowX, hourDrawY + shadowY2, hourShadowPaint);
+                    canvas.drawText(hour, hourDrawX + shadowX, hourDrawY + shadowY, hourShadowPaint);
                 }
             }
 
@@ -760,7 +764,7 @@ public class ThemeRenderer {
                 }
                 // Shadow for HH:MM connector
                 if (hourShadowPaint != null) {
-                    canvas.drawText(sep, sepMinX + shadowX, baseY + shadowY2, hourShadowPaint);
+                    canvas.drawText(sep, sepMinX + shadowX, baseY + shadowY, hourShadowPaint);
                 }
             }
 
@@ -770,7 +774,7 @@ public class ThemeRenderer {
                 if (fillEnabled || needsFallback) canvas.drawText(minute, minDrawX, minDrawY, minPaint);
                 // Black shadow text drawn ABOVE the normal text
                 if (minShadowPaint != null) {
-                    canvas.drawText(minute, minDrawX + shadowX, minDrawY + shadowY2, minShadowPaint);
+                    canvas.drawText(minute, minDrawX + shadowX, minDrawY + shadowY, minShadowPaint);
                 }
             }
 
@@ -801,7 +805,7 @@ public class ThemeRenderer {
                     }
                     // Shadow for MM:SS connector
                     if (secShadowPaint != null) {
-                        canvas.drawText(sep, secSepX + shadowX, baseY + shadowY2, secShadowPaint);
+                        canvas.drawText(sep, secSepX + shadowX, baseY + shadowY, secShadowPaint);
                     }
                 }
 
@@ -812,7 +816,7 @@ public class ThemeRenderer {
                     if (fillEnabled || needsFallback) canvas.drawText(second, secDrawX, secBaseY, secPaint);
                     // Black shadow text drawn ABOVE the normal text
                     if (secShadowPaint != null) {
-                        canvas.drawText(second, secDrawX + shadowX, secBaseY + shadowY2, secShadowPaint);
+                        canvas.drawText(second, secDrawX + shadowX, secBaseY + shadowY, secShadowPaint);
                     }
                 }
             }
@@ -824,7 +828,7 @@ public class ThemeRenderer {
                     if (secStrokePaint != null)  canvas.drawText(second, minDrawX, secBaseY, secStrokePaint);
                     if (fillEnabled || needsFallback) canvas.drawText(second, minDrawX, secBaseY, secPaint);
                     if (secShadowPaint != null) {
-                        canvas.drawText(second, minDrawX + shadowX, secBaseY + shadowY2, secShadowPaint);
+                        canvas.drawText(second, minDrawX + shadowX, secBaseY + shadowY, secShadowPaint);
                     }
                 }
             }

@@ -15,6 +15,7 @@
         android:layout_height="72dp"
         android:layout_gravity="top"
         android:layout_margin="16dp"
+        android:layout_marginBottom="0dp"
         android:background="@drawable/bg_nav_oval"
         android:elevation="6dp">
 
@@ -30,6 +31,7 @@
             app:itemTextAppearanceInactive="@style/TextAppearance.BottomNav.Inactive"
             app:itemTextColor="@color/nav_item_color_state"
             app:itemRippleColor="@color/nav_item_inactive"
+            app:itemActiveIndicatorStyle="@color/nav_item_inactive"
             app:menu="@menu/bottom_nav_menu" />
 
         <!-- Active indicator line under active nav item -->
@@ -49,7 +51,5 @@
         android:layout_height="match_parent"
         android:layout_marginTop="100dp"
         android:layout_marginBottom="0dp" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

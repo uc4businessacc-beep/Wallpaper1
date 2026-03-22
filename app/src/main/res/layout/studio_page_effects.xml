@@ -6,26 +6,6 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="12dp">
 
-        <!-- Opacity -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:background="#161616"
-            android:padding="12dp" android:layout_marginBottom="8dp">
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="Text Opacity"
-                    android:textColor="@color/light_text" android:textSize="13sp"/>
-                <TextView android:id="@+id/tv_opacity_val" android:layout_width="40dp" android:layout_height="wrap_content"
-                    android:text="100%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
-                <TextView android:id="@+id/btn_reset_opacity" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
-            </LinearLayout>
-            <SeekBar android:id="@+id/seek_opacity" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:max="100" android:progress="100"
-                android:layout_marginTop="6dp" android:paddingStart="0dp" android:paddingEnd="0dp"/>
-        </LinearLayout>
-
         <!-- Shadow Toggle + Controls -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:background="#161616"
@@ -38,13 +18,45 @@
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/sw_shadow"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:thumbTint="@color/accent" android:trackTint="#2E2E2E"/>
-                <TextView android:id="@+id/btn_reset_shadow" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                <TextView
+                    android:id="@+id/btn_reset_shadow"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺"
+                    android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true"
+                    android:focusable="true"/>
             </LinearLayout>
             <LinearLayout android:id="@+id/layout_shadow_controls"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:visibility="gone" android:layout_marginTop="10dp">
+
+                <!-- Shadow Opacity -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="4dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="Opacity"
+                        android:textColor="#AAAAAA" android:textSize="12sp"/>
+                    <TextView android:id="@+id/tv_shadow_opacity_val" android:layout_width="40dp" android:layout_height="wrap_content"
+                        android:text="100%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
+                    <TextView android:id="@+id/btn_reset_shadow_opacity"
+                        android:layout_width="@dimen/studio_reset_touch"
+                        android:layout_height="@dimen/studio_reset_touch"
+                        android:text="↺"
+                        android:textColor="@color/accent"
+                        android:textSize="@dimen/studio_reset_icon"
+                        android:gravity="center"
+                        android:background="@drawable/studio_reset_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+                <SeekBar android:id="@+id/seek_shadow_opacity" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:max="100" android:progress="100"
+                    android:paddingStart="0dp" android:paddingEnd="0dp" android:layout_marginBottom="10dp"/>
+
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="4dp">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
@@ -52,9 +64,16 @@
                         android:textColor="#AAAAAA" android:textSize="12sp"/>
                     <TextView android:id="@+id/tv_shadow_x_val" android:layout_width="30dp" android:layout_height="wrap_content"
                         android:text="4" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
-                    <TextView android:id="@+id/btn_reset_shadow_x" android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                        android:textSize="14sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/btn_reset_shadow_x"
+                        android:layout_width="@dimen/studio_reset_touch"
+                        android:layout_height="@dimen/studio_reset_touch"
+                        android:text="↺"
+                        android:textColor="@color/accent"
+                        android:textSize="@dimen/studio_reset_icon"
+                        android:gravity="center"
+                        android:background="@drawable/studio_reset_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
                 </LinearLayout>
                 <SeekBar android:id="@+id/seek_shadow_x" android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:max="200" android:progress="104"
@@ -66,9 +85,16 @@
                         android:textColor="#AAAAAA" android:textSize="12sp"/>
                     <TextView android:id="@+id/tv_shadow_y_val" android:layout_width="30dp" android:layout_height="wrap_content"
                         android:text="4" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
-                    <TextView android:id="@+id/btn_reset_shadow_y" android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                        android:textSize="14sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/btn_reset_shadow_y"
+                        android:layout_width="@dimen/studio_reset_touch"
+                        android:layout_height="@dimen/studio_reset_touch"
+                        android:text="↺"
+                        android:textColor="@color/accent"
+                        android:textSize="@dimen/studio_reset_icon"
+                        android:gravity="center"
+                        android:background="@drawable/studio_reset_bg"
+                        android:clickable="true"
+                        android:focusable="true"/>
                 </LinearLayout>
                 <SeekBar android:id="@+id/seek_shadow_y" android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:max="200" android:progress="104"
@@ -88,9 +114,17 @@
                 <androidx.appcompat.widget.SwitchCompat android:id="@+id/sw_stroke"
                     android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:thumbTint="@color/accent" android:trackTint="#2E2E2E"/>
-                <TextView android:id="@+id/btn_reset_stroke" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                <TextView
+                    android:id="@+id/btn_reset_stroke"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺"
+                    android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true"
+                    android:focusable="true"/>
             </LinearLayout>
             <LinearLayout android:id="@+id/layout_stroke_controls"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -183,9 +217,17 @@
                     android:textColor="@color/light_text" android:textSize="13sp"/>
                 <TextView android:id="@+id/tv_mask_opacity_val" android:layout_width="40dp" android:layout_height="wrap_content"
                     android:text="100%" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
-                <TextView android:id="@+id/btn_reset_mask_opacity" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                <TextView
+                    android:id="@+id/btn_reset_mask_opacity"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺"
+                    android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true"
+                    android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_mask_opacity" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:max="100" android:progress="100"
@@ -204,9 +246,17 @@
                     android:textColor="@color/light_text" android:textSize="13sp"/>
                 <TextView android:id="@+id/tv_glow_radius_val" android:layout_width="40dp" android:layout_height="wrap_content"
                     android:text="0" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
-                <TextView android:id="@+id/btn_reset_glow" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                <TextView
+                    android:id="@+id/btn_reset_glow"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺"
+                    android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true"
+                    android:focusable="true"/>
             </LinearLayout>
             <SeekBar android:id="@+id/seek_glow_radius"
                 android:layout_width="match_parent" android:layout_height="wrap_content"

@@ -19,8 +19,12 @@
                     android:layout_weight="1" android:text="Clock Style"
                     android:textColor="@color/light_text" android:textSize="13sp"/>
                 <TextView android:id="@+id/btn_reset_clock_style"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="↺" android:textColor="@color/accent" android:textSize="16sp"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
                     android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -96,9 +100,14 @@
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="Depth Layering"
                     android:textColor="@color/light_text" android:textSize="13sp"/>
-                <TextView android:id="@+id/btn_reset_depth" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/btn_reset_depth"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:scrollbars="none">
@@ -153,9 +162,14 @@
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:text="Font Family"
                     android:textColor="@color/light_text" android:textSize="13sp"/>
-                <TextView android:id="@+id/btn_reset_font" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/btn_reset_font"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_fonts"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -173,9 +187,14 @@
                     android:textColor="@color/light_text" android:textSize="13sp"/>
                 <TextView android:id="@+id/tv_ls_val" android:layout_width="40dp" android:layout_height="wrap_content"
                     android:text="0" android:textColor="@color/accent" android:textSize="12sp" android:gravity="end"/>
-                <TextView android:id="@+id/btn_reset_ls" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="8dp" android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/btn_reset_ls"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="4dp">
@@ -201,9 +220,15 @@
                     android:textColor="@color/light_text" android:textSize="13sp"/>
                 <View android:id="@+id/swatch_hour" android:layout_width="36dp" android:layout_height="36dp"
                     android:background="@color/light_text" android:clickable="true" android:focusable="true"/>
-                <TextView android:id="@+id/btn_reset_hour_color" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="10dp" android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/btn_reset_hour_color"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <com.infinity.wallpaper.ui.common.InlineColorPicker
                 android:id="@+id/color_picker_hour"
@@ -226,9 +251,15 @@
                     android:textColor="@color/light_text" android:textSize="13sp"/>
                 <View android:id="@+id/swatch_minute" android:layout_width="36dp" android:layout_height="36dp"
                     android:background="@color/accent" android:clickable="true" android:focusable="true"/>
-                <TextView android:id="@+id/btn_reset_min_color" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="↺" android:textColor="@color/accent"
-                    android:textSize="16sp" android:paddingStart="10dp" android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/btn_reset_min_color"
+                    android:layout_width="@dimen/studio_reset_touch"
+                    android:layout_height="@dimen/studio_reset_touch"
+                    android:text="↺" android:textColor="@color/accent"
+                    android:textSize="@dimen/studio_reset_icon"
+                    android:gravity="center"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/studio_reset_bg"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
             <com.infinity.wallpaper.ui.common.InlineColorPicker
                 android:id="@+id/color_picker_minute"

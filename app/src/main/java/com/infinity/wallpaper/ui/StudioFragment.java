@@ -832,6 +832,13 @@ public class StudioFragment extends Fragment {
             StudioFragment.unregisterResetListener(this);
         }
 
+        // ── helper: nudge a seekbar by delta and fire its listener ──────────
+        private void nudgeSeek(@Nullable SeekBar seek, int delta) {
+            if (seek == null) return;
+            int v = Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta));
+            seek.setProgress(v);
+        }
+
         @Override
         public void onStudioReset() {
             if (!isAdded() || getView() == null) return;
@@ -872,9 +879,9 @@ public class StudioFragment extends Fragment {
 
             SeekBar seekStrokeW = getView().findViewById(R.id.seek_stroke_w);
             TextView tvStrokeW = getView().findViewById(R.id.tv_stroke_w_val);
-            int sw = (int) t.optDouble("strokeWidth", 0);
-            if (seekStrokeW != null) seekStrokeW.setProgress(Math.min(50, Math.max(0, sw)));
-            if (tvStrokeW != null) tvStrokeW.setText(String.valueOf(sw));
+            int sw2 = (int) t.optDouble("strokeWidth", 0);
+            if (seekStrokeW != null) seekStrokeW.setProgress(Math.min(50, Math.max(0, sw2)));
+            if (tvStrokeW != null) tvStrokeW.setText(String.valueOf(sw2));
 
             InlineColorPicker cpStroke = getView().findViewById(R.id.color_picker_stroke);
             View swStrokeCol = getView().findViewById(R.id.swatch_stroke);
@@ -923,10 +930,9 @@ public class StudioFragment extends Fragment {
             StudioFragment st = getStudio(this);
             if (st == null) return v;
 
-            // Read from effective (merged) theme for initial values
             JSONObject effectiveTime = st.getEffectiveTime();
 
-            // ── Shadow Toggle + Controls ─────────────────────────────────────
+            // ── Shadow Toggle ────────────────────────────────────────────────
             SwitchCompat swShadow = v.findViewById(R.id.sw_shadow);
             View shadowCtrl = v.findViewById(R.id.layout_shadow_controls);
             boolean initShad = effectiveTime.optBoolean("shadowEnabled", false);
@@ -935,10 +941,16 @@ public class StudioFragment extends Fragment {
             swShadow.setOnCheckedChangeListener((b2, ch) -> {
                 shadowCtrl.setVisibility(ch ? View.VISIBLE : View.GONE);
                 StudioManager.setShadowEnabled(requireContext(), ch);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
+            });
+            // FIXED: btn_reset_shadow resets just the enabled flag
+            v.findViewById(R.id.btn_reset_shadow).setOnClickListener(b -> {
+                swShadow.setChecked(false);
+                StudioManager.resetTimeKey(requireContext(), "shadowEnabled");
+                st.scheduleRefresh(); st.broadcastChange();
             });
 
+            // Shadow Opacity
             SeekBar seekShOp = v.findViewById(R.id.seek_shadow_opacity);
             TextView tvShOp = v.findViewById(R.id.tv_shadow_opacity_val);
             int initShOp = (int) (effectiveTime.optDouble("shadowOpacity", 1.0) * 100);
@@ -947,67 +959,61 @@ public class StudioFragment extends Fragment {
             seekShOp.setOnSeekBarChangeListener(simple(val -> {
                 tvShOp.setText(val + "%");
                 StudioManager.setShadowOpacity(requireContext(), val / 100f);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             }));
             v.findViewById(R.id.btn_reset_shadow_opacity).setOnClickListener(b -> {
                 StudioManager.resetTimeKey(requireContext(), "shadowOpacity");
                 int v2 = (int) (st.getEffectiveTime().optDouble("shadowOpacity", 1.0) * 100);
                 seekShOp.setProgress(Math.min(100, Math.max(0, v2)));
                 tvShOp.setText(v2 + "%");
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_shadow_opacity).setOnClickListener(b -> nudgeSeek(seekShOp, -1));
+            v.findViewById(R.id.btn_plus_shadow_opacity).setOnClickListener(b -> nudgeSeek(seekShOp, +1));
 
+            // Shadow X
             SeekBar seekSx = v.findViewById(R.id.seek_shadow_x);
-            SeekBar seekSy = v.findViewById(R.id.seek_shadow_y);
             TextView tvSx = v.findViewById(R.id.tv_shadow_x_val);
-            TextView tvSy = v.findViewById(R.id.tv_shadow_y_val);
             int initShadowX = (int) effectiveTime.optDouble("shadowX", 4);
-            int initShadowY = (int) effectiveTime.optDouble("shadowY", 4);
             seekSx.setProgress(initShadowX + 100);
             tvSx.setText(String.valueOf(initShadowX));
-            seekSy.setProgress(initShadowY + 100);
-            tvSy.setText(String.valueOf(initShadowY));
             seekSx.setOnSeekBarChangeListener(simple(val -> {
-                int realVal = val - 100;
-                tvSx.setText(String.valueOf(realVal));
-                StudioManager.setShadowX(requireContext(), realVal);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                int rv = val - 100;
+                tvSx.setText(String.valueOf(rv));
+                StudioManager.setShadowX(requireContext(), rv);
+                st.scheduleRefresh(); st.broadcastChange();
             }));
-            seekSy.setOnSeekBarChangeListener(simple(val -> {
-                int realVal = val - 100;
-                tvSy.setText(String.valueOf(realVal));
-                StudioManager.setShadowY(requireContext(), realVal);
-                st.scheduleRefresh();
-                st.broadcastChange();
-            }));
-
-            v.findViewById(R.id.btn_reset_shadow).setOnClickListener(b -> {
-                swShadow.setChecked(false);
-                StudioManager.resetTimeKey(requireContext(), "shadowEnabled");
-                st.scheduleRefresh();
-                st.broadcastChange();
-            });
             v.findViewById(R.id.btn_reset_shadow_x).setOnClickListener(b -> {
                 StudioManager.resetTimeKey(requireContext(), "shadowX");
                 int v2 = (int) st.getEffectiveTime().optDouble("shadowX", 4);
-                seekSx.setProgress(v2 + 100);
-                tvSx.setText(String.valueOf(v2));
-                st.scheduleRefresh();
-                st.broadcastChange();
+                seekSx.setProgress(v2 + 100); tvSx.setText(String.valueOf(v2));
+                st.scheduleRefresh(); st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_shadow_x).setOnClickListener(b -> nudgeSeek(seekSx, -1));
+            v.findViewById(R.id.btn_plus_shadow_x).setOnClickListener(b -> nudgeSeek(seekSx, +1));
+
+            // Shadow Y
+            SeekBar seekSy = v.findViewById(R.id.seek_shadow_y);
+            TextView tvSy = v.findViewById(R.id.tv_shadow_y_val);
+            int initShadowY = (int) effectiveTime.optDouble("shadowY", 4);
+            seekSy.setProgress(initShadowY + 100);
+            tvSy.setText(String.valueOf(initShadowY));
+            seekSy.setOnSeekBarChangeListener(simple(val -> {
+                int rv = val - 100;
+                tvSy.setText(String.valueOf(rv));
+                StudioManager.setShadowY(requireContext(), rv);
+                st.scheduleRefresh(); st.broadcastChange();
+            }));
             v.findViewById(R.id.btn_reset_shadow_y).setOnClickListener(b -> {
                 StudioManager.resetTimeKey(requireContext(), "shadowY");
                 int v2 = (int) st.getEffectiveTime().optDouble("shadowY", 4);
-                seekSy.setProgress(v2 + 100);
-                tvSy.setText(String.valueOf(v2));
-                st.scheduleRefresh();
-                st.broadcastChange();
+                seekSy.setProgress(v2 + 100); tvSy.setText(String.valueOf(v2));
+                st.scheduleRefresh(); st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_shadow_y).setOnClickListener(b -> nudgeSeek(seekSy, -1));
+            v.findViewById(R.id.btn_plus_shadow_y).setOnClickListener(b -> nudgeSeek(seekSy, +1));
 
-            // ── Stroke Toggle + Controls ─────────────────────────────────────
+            // ── Stroke Toggle ────────────────────────────────────────────────
             SwitchCompat swStroke = v.findViewById(R.id.sw_stroke);
             View strokeCtrl = v.findViewById(R.id.layout_stroke_controls);
             boolean initStroke = effectiveTime.optBoolean("strokeEnabled", false);
@@ -1016,10 +1022,20 @@ public class StudioFragment extends Fragment {
             swStroke.setOnCheckedChangeListener((b2, ch) -> {
                 strokeCtrl.setVisibility(ch ? View.VISIBLE : View.GONE);
                 StudioManager.setStrokeEnabled(requireContext(), ch);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
+            });
+            // FIXED: uses new unique ID btn_reset_stroke_toggle
+            v.findViewById(R.id.btn_reset_stroke_toggle).setOnClickListener(b -> {
+                StudioManager.resetTimeKey(requireContext(), "strokeEnabled");
+                StudioManager.resetTimeKey(requireContext(), "strokeWidth");
+                StudioManager.resetTimeKey(requireContext(), "strokeColor");
+                StudioManager.resetTimeKey(requireContext(), "strokeTarget");
+                StudioManager.resetTimeKey(requireContext(), "fillEnabled");
+                onStudioReset();
+                st.scheduleRefresh(); st.broadcastChange();
             });
 
+            // Stroke Width — FIXED: uses new unique ID btn_reset_stroke_w
             SeekBar seekStrokeW = v.findViewById(R.id.seek_stroke_w);
             TextView tvStrokeW = v.findViewById(R.id.tv_stroke_w_val);
             int initSW = (int) effectiveTime.optDouble("strokeWidth", 0);
@@ -1028,10 +1044,33 @@ public class StudioFragment extends Fragment {
             seekStrokeW.setOnSeekBarChangeListener(simple(val -> {
                 tvStrokeW.setText(String.valueOf(val));
                 StudioManager.setStrokeWidth(requireContext(), val);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             }));
+            v.findViewById(R.id.btn_reset_stroke_w).setOnClickListener(b -> {
+                StudioManager.resetTimeKey(requireContext(), "strokeWidth");
+                int v2 = (int) st.getEffectiveTime().optDouble("strokeWidth", 0);
+                seekStrokeW.setProgress(Math.min(50, Math.max(0, v2)));
+                tvStrokeW.setText(String.valueOf(v2));
+                st.scheduleRefresh(); st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_minus_stroke_w).setOnClickListener(b -> nudgeSeek(seekStrokeW, -1));
+            v.findViewById(R.id.btn_plus_stroke_w).setOnClickListener(b -> nudgeSeek(seekStrokeW, +1));
 
+            // Stroke target radio
+            RadioGroup rgTarget = v.findViewById(R.id.rg_stroke_target);
+            String initTarget = effectiveTime.optString("strokeTarget", "both");
+            if ("hh".equals(initTarget)) rgTarget.check(R.id.rb_stroke_hh);
+            else if ("mm".equals(initTarget)) rgTarget.check(R.id.rb_stroke_mm);
+            else rgTarget.check(R.id.rb_stroke_both);
+            rgTarget.setOnCheckedChangeListener((g, checkedId) -> {
+                String tgt = "both";
+                if (checkedId == R.id.rb_stroke_hh) tgt = "hh";
+                else if (checkedId == R.id.rb_stroke_mm) tgt = "mm";
+                StudioManager.setStrokeTarget(requireContext(), tgt);
+                st.scheduleRefresh(); st.broadcastChange();
+            });
+
+            // Stroke Color
             InlineColorPicker cpStroke = v.findViewById(R.id.color_picker_stroke);
             View swStrokeCol = v.findViewById(R.id.swatch_stroke);
             String initStrokeCol = effectiveTime.optString("strokeColor", "#000000");
@@ -1041,51 +1080,22 @@ public class StudioFragment extends Fragment {
                 cpStroke.setOnColorSelectedListener(col -> {
                     trySetBg(swStrokeCol, col);
                     StudioManager.setStrokeColor(requireContext(), col);
-                    st.scheduleRefresh();
-                    st.broadcastChange();
+                    st.scheduleRefresh(); st.broadcastChange();
                 });
             }
 
-            RadioGroup rgTarget = v.findViewById(R.id.rg_stroke_target);
-            String initTarget = effectiveTime.optString("strokeTarget", "both");
-            if (rgTarget != null) {
-                if ("hh".equals(initTarget)) rgTarget.check(R.id.rb_stroke_hh);
-                else if ("mm".equals(initTarget)) rgTarget.check(R.id.rb_stroke_mm);
-                else rgTarget.check(R.id.rb_stroke_both);
-
-                rgTarget.setOnCheckedChangeListener((g, checkedId) -> {
-                    String tgt = "both";
-                    if (checkedId == R.id.rb_stroke_hh) tgt = "hh";
-                    else if (checkedId == R.id.rb_stroke_mm) tgt = "mm";
-                    StudioManager.setStrokeTarget(requireContext(), tgt);
-                    st.scheduleRefresh();
-                    st.broadcastChange();
-                });
-            }
-
+            // Fill enabled
             SwitchCompat swFill = v.findViewById(R.id.sw_fill_enabled);
             boolean initFill = effectiveTime.optBoolean("fillEnabled", true);
             if (swFill != null) {
                 swFill.setChecked(initFill);
                 swFill.setOnCheckedChangeListener((b2, ch) -> {
                     StudioManager.setFillEnabled(requireContext(), ch);
-                    st.scheduleRefresh();
-                    st.broadcastChange();
+                    st.scheduleRefresh(); st.broadcastChange();
                 });
             }
 
-            v.findViewById(R.id.btn_reset_stroke).setOnClickListener(b -> {
-                StudioManager.resetTimeKey(requireContext(), "strokeEnabled");
-                StudioManager.resetTimeKey(requireContext(), "strokeWidth");
-                StudioManager.resetTimeKey(requireContext(), "strokeColor");
-                StudioManager.resetTimeKey(requireContext(), "strokeTarget");
-                // keep fill as-is
-                onStudioReset();
-                st.scheduleRefresh();
-                st.broadcastChange();
-            });
-
-            // ── Mask opacity ────────────────────────────────────────────────
+            // ── Mask Opacity ─────────────────────────────────────────────────
             SeekBar seekMask = v.findViewById(R.id.seek_mask_opacity);
             TextView tvMask = v.findViewById(R.id.tv_mask_opacity_val);
             int initMask = (int) (effectiveTime.optDouble("maskOpacity", 1.0) * 100);
@@ -1094,19 +1104,19 @@ public class StudioFragment extends Fragment {
             seekMask.setOnSeekBarChangeListener(simple(val -> {
                 tvMask.setText(val + "%");
                 StudioManager.setMaskOpacity(requireContext(), val / 100f);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             }));
             v.findViewById(R.id.btn_reset_mask_opacity).setOnClickListener(b -> {
                 StudioManager.resetTimeKey(requireContext(), "maskOpacity");
                 int v2 = (int) (st.getEffectiveTime().optDouble("maskOpacity", 1.0) * 100);
                 seekMask.setProgress(Math.min(100, Math.max(0, v2)));
                 tvMask.setText(v2 + "%");
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_mask_opacity).setOnClickListener(b -> nudgeSeek(seekMask, -1));
+            v.findViewById(R.id.btn_plus_mask_opacity).setOnClickListener(b -> nudgeSeek(seekMask, +1));
 
-            // ── Glow ───────────────────────────────────────────────────────
+            // ── Glow Radius ──────────────────────────────────────────────────
             SeekBar seekGlow = v.findViewById(R.id.seek_glow_radius);
             TextView tvGlow = v.findViewById(R.id.tv_glow_radius_val);
             int initGlow = (int) effectiveTime.optDouble("glowRadius", 0);
@@ -1115,33 +1125,33 @@ public class StudioFragment extends Fragment {
             seekGlow.setOnSeekBarChangeListener(simple(val -> {
                 tvGlow.setText(String.valueOf(val));
                 StudioManager.setGlowRadius(requireContext(), val);
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             }));
-
-            InlineColorPicker cpGlow = v.findViewById(R.id.color_picker_glow);
-            View swGlow = v.findViewById(R.id.swatch_glow);
-            String initGlowCol = effectiveTime.optString("glowColor", effectiveTime.optString("minuteColor", "#FFFFFF"));
-            trySetBg(swGlow, initGlowCol);
-            if (cpGlow != null) {
-                cpGlow.setSelectedColor(initGlowCol);
-                cpGlow.setOnColorSelectedListener(col -> {
-                    trySetBg(swGlow, col);
-                    StudioManager.setGlowColor(requireContext(), col);
-                    st.scheduleRefresh();
-                    st.broadcastChange();
-                });
-            }
-
             v.findViewById(R.id.btn_reset_glow).setOnClickListener(b -> {
                 StudioManager.resetTimeKey(requireContext(), "glowRadius");
                 StudioManager.resetTimeKey(requireContext(), "glowColor");
                 onStudioReset();
-                st.scheduleRefresh();
-                st.broadcastChange();
+                st.scheduleRefresh(); st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_glow_radius).setOnClickListener(b -> nudgeSeek(seekGlow, -1));
+            v.findViewById(R.id.btn_plus_glow_radius).setOnClickListener(b -> nudgeSeek(seekGlow, +1));
 
-            // One-time restore to ensure all controls reflect effective theme (including after main reset)
+            // Glow Color
+            InlineColorPicker cpGlow = v.findViewById(R.id.color_picker_glow);
+            View swGlowSwatch = v.findViewById(R.id.swatch_glow);
+            String initGlowCol = effectiveTime.optString("glowColor",
+                    effectiveTime.optString("minuteColor", "#FFFFFF"));
+            trySetBg(swGlowSwatch, initGlowCol);
+            if (cpGlow != null) {
+                cpGlow.setSelectedColor(initGlowCol);
+                cpGlow.setOnColorSelectedListener(col -> {
+                    trySetBg(swGlowSwatch, col);
+                    StudioManager.setGlowColor(requireContext(), col);
+                    st.scheduleRefresh(); st.broadcastChange();
+                });
+            }
+
+            // Restore on first draw
             v.post(this::onStudioReset);
             return v;
         }
@@ -1622,6 +1632,7 @@ public class StudioFragment extends Fragment {
         try { view.setBackgroundColor(android.graphics.Color.parseColor(hex)); } catch (Exception ignored) {}
     }
 }
+
 
 
 

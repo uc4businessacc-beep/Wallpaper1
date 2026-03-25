@@ -127,9 +127,11 @@ public class CollectionsFragment extends Fragment {
     private void loadAllWallpapersGrouped() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("wallpapers").get().addOnCompleteListener(task -> {
+            if (!isAdded()) return;
             final java.util.Map<String, WallpaperItem> dedupe = new LinkedHashMap<>();
             if (task.isSuccessful() && task.getResult() != null) {
                 for (QueryDocumentSnapshot doc : task.getResult()) {
+                    if (!isAdded()) return;
                     try {
                         WallpaperItem direct = doc.toObject(WallpaperItem.class);
                         if (direct != null) {
@@ -155,6 +157,7 @@ public class CollectionsFragment extends Fragment {
                     } catch (Exception ex) { ex.printStackTrace(); }
 
                     db.collection("wallpapers").document(doc.getId()).collection("names").get().addOnCompleteListener(sub -> {
+                        if (!isAdded()) return;
                         if (sub.isSuccessful() && sub.getResult() != null) {
                             for (QueryDocumentSnapshot sd : sub.getResult()) {
                                 try {
@@ -186,6 +189,7 @@ public class CollectionsFragment extends Fragment {
     }
 
     private void buildAndShowSections(List<WallpaperItem> wallpapers) {
+        if (!isAdded()) return;
         // group by category (case-preserve first seen)
         Map<String, List<WallpaperItem>> temp = new LinkedHashMap<>();
         for (WallpaperItem it : wallpapers) {

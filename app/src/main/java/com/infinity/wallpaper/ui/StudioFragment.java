@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 public class StudioFragment extends Fragment {
-    static View v;
 
 
     public interface OnStudioResetListener {
@@ -71,6 +70,7 @@ public class StudioFragment extends Fragment {
     private ProgressBar pbPreview;
     private final Handler debounce = new Handler(Looper.getMainLooper());
     private Runnable pendingRefresh;
+    private java.util.concurrent.ExecutorService previewExecutor;
 
     // Per-second updater when seconds style is selected
     private final Handler secondHandler = new Handler(Looper.getMainLooper());
@@ -144,6 +144,9 @@ public class StudioFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         stopSecondUpdater();
+        if (pendingRefresh != null) debounce.removeCallbacks(pendingRefresh);
+        if (previewExecutor != null) previewExecutor.shutdownNow();
+        ivBg = null; ivText = null; ivMask = null; pbPreview = null;
     }
 
     private void loadPreviewImages() {
@@ -166,16 +169,21 @@ public class StudioFragment extends Fragment {
 
     public void refreshPreview() {
         if (!isAdded()) return;
-        String themeJson = StudioManager.getEffectiveThemeJson(requireContext());
+        // Capture context and metrics on the main thread before submitting to background.
+        final android.content.Context ctx = requireContext().getApplicationContext();
+        String themeJson = StudioManager.getEffectiveThemeJson(ctx);
 
         android.util.DisplayMetrics dm = new android.util.DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getRealMetrics(dm);
         final int REF_W = dm.widthPixels > 0 ? dm.widthPixels : 1080;
         final int REF_H = REF_W > 0 ? (int) (REF_W * 20f / 9f) : 2400;
 
-        Executors.newSingleThreadExecutor().execute(() -> {
+        if (previewExecutor == null || previewExecutor.isShutdown()) {
+            previewExecutor = Executors.newSingleThreadExecutor();
+        }
+        previewExecutor.execute(() -> {
             try {
-                Bitmap composed = composePreview(requireContext(), themeJson, REF_W, REF_H);
+                Bitmap composed = composePreview(ctx, themeJson, REF_W, REF_H);
                 new Handler(Looper.getMainLooper()).post(() -> {
                     if (!isAdded()) return;
                     if (composed != null) {
@@ -473,7 +481,7 @@ public class StudioFragment extends Fragment {
         @Nullable
         @Override
         public View onCreateView(@NonNull LayoutInflater inf, @Nullable ViewGroup c, @Nullable Bundle s) {
-            v = inf.inflate(R.layout.studio_page_basics, c, false);
+            View v = inf.inflate(R.layout.studio_page_basics, c, false);
             StudioFragment st = getStudio(this);
             if (st == null) return v;
 

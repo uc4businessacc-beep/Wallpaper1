@@ -395,6 +395,27 @@ public class StudioFragment extends Fragment {
         }
     }
 
+    // ── Shared nudge helper ──────────────────────────────────────────────────
+    /**
+     * Nudges a SeekBar by delta, updates the label TextView, calls the StudioManager setter,
+     * and triggers a preview refresh + wallpaper broadcast.
+     */
+    static void nudgeSeekAndApply(@Nullable SeekBar seek, int delta,
+                                  @Nullable TextView label, @NonNull String labelFormat,
+                                  @NonNull Runnable studioManagerCall,
+                                  @NonNull StudioFragment st) {
+        if (seek == null) return;
+        int next = Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta));
+        seek.setProgress(next);
+        if (label != null) {
+            // labelFormat uses printf style: e.g. "%dsp", "%d%%", "%d°"
+            label.setText(String.format(labelFormat, next));
+        }
+        studioManagerCall.run();
+        st.scheduleRefresh();
+        st.broadcastChange();
+    }
+
     // ── PAGE 1: Basics ───────────────────────────────────────────────────────
     public static class BasicsPage extends Fragment implements StudioFragment.OnStudioResetListener {
         @Override
@@ -421,7 +442,7 @@ public class StudioFragment extends Fragment {
             int size = (int) t.optDouble("size", 520);
             if (seekSize != null) {
                 seekSize.setProgress(Math.min(1200, Math.max(0, size)));
-                tvSize.setText(size + "sp");
+                if (tvSize != null) tvSize.setText(size + "sp");
             }
 
             SeekBar seekX = getView().findViewById(R.id.seek_posx);
@@ -429,7 +450,7 @@ public class StudioFragment extends Fragment {
             int x = (int) (t.optDouble("x", 0.5) * 100);
             if (seekX != null) {
                 seekX.setProgress(Math.min(100, Math.max(0, x)));
-                tvX.setText(x + "%");
+                if (tvX != null) tvX.setText(x + "%");
             }
 
             SeekBar seekY = getView().findViewById(R.id.seek_posy);
@@ -437,7 +458,7 @@ public class StudioFragment extends Fragment {
             int y = (int) (t.optDouble("y", 0.65) * 100);
             if (seekY != null) {
                 seekY.setProgress(Math.min(100, Math.max(0, y)));
-                tvY.setText(y + "%");
+                if (tvY != null) tvY.setText(y + "%");
             }
 
             SeekBar seekOp = getView().findViewById(R.id.seek_opacity);
@@ -445,7 +466,7 @@ public class StudioFragment extends Fragment {
             int op = (int) (t.optDouble("opacity", 1.0) * 100);
             if (seekOp != null) {
                 seekOp.setProgress(Math.min(100, Math.max(0, op)));
-                tvOp.setText(op + "%");
+                if (tvOp != null) tvOp.setText(op + "%");
             }
         }
 
@@ -458,6 +479,7 @@ public class StudioFragment extends Fragment {
 
             JSONObject effectiveTime = st.getEffectiveTime();
 
+            // ── Font Size ──
             SeekBar seekSize = v.findViewById(R.id.seek_size);
             TextView tvSize = v.findViewById(R.id.tv_size_val);
             int initSize = (int) effectiveTime.optDouble("size", 520);
@@ -478,7 +500,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_size).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekSize.getMax(), seekSize.getProgress() - 1));
+                seekSize.setProgress(next);
+                tvSize.setText(next + "sp");
+                StudioManager.setFontSize(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_size).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekSize.getMax(), seekSize.getProgress() + 1));
+                seekSize.setProgress(next);
+                tvSize.setText(next + "sp");
+                StudioManager.setFontSize(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
+            // ── Position X ──
             SeekBar seekX = v.findViewById(R.id.seek_posx);
             TextView tvX = v.findViewById(R.id.tv_posx_val);
             int initX = (int) (effectiveTime.optDouble("x", 0.5) * 100);
@@ -498,7 +537,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_posx).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekX.getMax(), seekX.getProgress() - 1));
+                seekX.setProgress(next);
+                tvX.setText(next + "%");
+                StudioManager.setPosX(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_posx).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekX.getMax(), seekX.getProgress() + 1));
+                seekX.setProgress(next);
+                tvX.setText(next + "%");
+                StudioManager.setPosX(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
+            // ── Position Y ──
             SeekBar seekY = v.findViewById(R.id.seek_posy);
             TextView tvY = v.findViewById(R.id.tv_posy_val);
             int initY = (int) (effectiveTime.optDouble("y", 0.65) * 100);
@@ -518,7 +574,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
+            v.findViewById(R.id.btn_minus_posy).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekY.getMax(), seekY.getProgress() - 1));
+                seekY.setProgress(next);
+                tvY.setText(next + "%");
+                StudioManager.setPosY(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_posy).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekY.getMax(), seekY.getProgress() + 1));
+                seekY.setProgress(next);
+                tvY.setText(next + "%");
+                StudioManager.setPosY(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
+            // ── Opacity ──
             SeekBar seekOp = v.findViewById(R.id.seek_opacity);
             TextView tvOp = v.findViewById(R.id.tv_opacity_val);
             int initOp = (int) (effectiveTime.optDouble("opacity", 1.0) * 100);
@@ -538,28 +611,25 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-
-            // +/- nudge buttons
-            v.findViewById(R.id.btn_minus_size).setOnClickListener(btn -> nudgeSeek(seekSize, -1));
-            v.findViewById(R.id.btn_plus_size).setOnClickListener(btn -> nudgeSeek(seekSize, +1));
-            v.findViewById(R.id.btn_minus_posx).setOnClickListener(btn -> nudgeSeek(seekX, -1));
-            v.findViewById(R.id.btn_plus_posx).setOnClickListener(btn -> nudgeSeek(seekX, +1));
-            v.findViewById(R.id.btn_minus_posy).setOnClickListener(btn -> nudgeSeek(seekY, -1));
-            v.findViewById(R.id.btn_plus_posy).setOnClickListener(btn -> nudgeSeek(seekY, +1));
+            // opacity nudge buttons use btn_minus_textopacity / btn_plus_textopacity
+            v.findViewById(R.id.btn_minus_textopacity).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekOp.getMax(), seekOp.getProgress() - 1));
+                seekOp.setProgress(next);
+                tvOp.setText(next + "%");
+                StudioManager.setOpacity(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_textopacity).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekOp.getMax(), seekOp.getProgress() + 1));
+                seekOp.setProgress(next);
+                tvOp.setText(next + "%");
+                StudioManager.setOpacity(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             return v;
-        }
-
-        private void nudgeSeek(@Nullable SeekBar seek, int delta) {
-            StudioFragment st = getStudio(this);
-            if (seek == null) return;
-            seek.setProgress(Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta)));
-            StudioManager.setFontSize(requireContext(), seek.getProgress());
-            assert st != null;
-            st.scheduleRefresh();
-            TextView tvs = v.findViewById(R.id.tv_size_val);
-            tvs.setText(seek.getProgress() + "sp");
-
         }
     }
 
@@ -600,7 +670,7 @@ public class StudioFragment extends Fragment {
             int ls = (int) t.optDouble("letterSpacing", 0);
             if (seekLs != null) {
                 seekLs.setProgress(Math.min(200, Math.max(0, ls + 100)));
-                tvLs.setText(String.valueOf(ls));
+                if (tvLs != null) tvLs.setText(String.valueOf(ls));
             }
 
             SwitchCompat swConnector = getView().findViewById(R.id.sw_connector_behind);
@@ -746,7 +816,7 @@ public class StudioFragment extends Fragment {
                 st.broadcastChange();
             });
 
-            // Letter Spacing
+            // ── Letter Spacing ──
             SeekBar seekLs = v.findViewById(R.id.seek_ls);
             TextView tvLs = v.findViewById(R.id.tv_ls_val);
             int initLs = (int) effectiveTime.optDouble("letterSpacing", 0);
@@ -767,8 +837,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_ls).setOnClickListener(btn -> nudgeSeek(seekLs, -1));
-            v.findViewById(R.id.btn_plus_ls).setOnClickListener(btn -> nudgeSeek(seekLs, +1));
+            v.findViewById(R.id.btn_minus_ls).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekLs.getMax(), seekLs.getProgress() - 1));
+                seekLs.setProgress(next);
+                int rv = next - 100;
+                tvLs.setText(String.valueOf(rv));
+                StudioManager.setLetterSpacing(requireContext(), rv);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_ls).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekLs.getMax(), seekLs.getProgress() + 1));
+                seekLs.setProgress(next);
+                int rv = next - 100;
+                tvLs.setText(String.valueOf(rv));
+                StudioManager.setLetterSpacing(requireContext(), rv);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // Hour Color
             String[] hc = {effectiveTime.optString("hourColor", "#FFFFFF")};
@@ -814,7 +900,7 @@ public class StudioFragment extends Fragment {
                 st.broadcastChange();
             });
 
-            // Time gradient
+            // ── Time Gradient ──
             SwitchCompat swGrad = v.findViewById(R.id.sw_time_gradient);
             View gradAngleLayout = v.findViewById(R.id.layout_time_gradient_angle);
             SeekBar seekGradAng = v.findViewById(R.id.seek_time_gradient_angle);
@@ -837,15 +923,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             }));
-            v.findViewById(R.id.btn_minus_time_gradient_angle).setOnClickListener(btn -> nudgeSeek(seekGradAng, -1));
-            v.findViewById(R.id.btn_plus_time_gradient_angle).setOnClickListener(btn -> nudgeSeek(seekGradAng, +1));
+            v.findViewById(R.id.btn_minus_time_gradient_angle).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekGradAng.getMax(), seekGradAng.getProgress() - 1));
+                seekGradAng.setProgress(next);
+                tvGradAng.setText(next + "°");
+                StudioManager.setTimeGradientAngle(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_time_gradient_angle).setOnClickListener(btn -> {
+                int next = Math.max(0, Math.min(seekGradAng.getMax(), seekGradAng.getProgress() + 1));
+                seekGradAng.setProgress(next);
+                tvGradAng.setText(next + "°");
+                StudioManager.setTimeGradientAngle(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             return v;
-        }
-
-        private void nudgeSeek(@Nullable SeekBar seek, int delta) {
-            if (seek == null) return;
-            seek.setProgress(Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta)));
         }
     }
 
@@ -861,11 +956,6 @@ public class StudioFragment extends Fragment {
         public void onPause() {
             super.onPause();
             StudioFragment.unregisterResetListener(this);
-        }
-
-        private void nudgeSeek(@Nullable SeekBar seek, int delta) {
-            if (seek == null) return;
-            seek.setProgress(Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta)));
         }
 
         @Override
@@ -886,7 +976,7 @@ public class StudioFragment extends Fragment {
             int op = (int) (t.optDouble("shadowOpacity", 1.0) * 100);
             if (seekShOp != null) {
                 seekShOp.setProgress(Math.min(100, Math.max(0, op)));
-                tvShOp.setText(op + "%");
+                if (tvShOp != null) tvShOp.setText(op + "%");
             }
 
             SeekBar seekSx = getView().findViewById(R.id.seek_shadow_x);
@@ -897,11 +987,11 @@ public class StudioFragment extends Fragment {
             int sy = (int) t.optDouble("shadowY", 4);
             if (seekSx != null) {
                 seekSx.setProgress(sx + 100);
-                tvSx.setText(String.valueOf(sx));
+                if (tvSx != null) tvSx.setText(String.valueOf(sx));
             }
             if (seekSy != null) {
                 seekSy.setProgress(sy + 100);
-                tvSy.setText(String.valueOf(sy));
+                if (tvSy != null) tvSy.setText(String.valueOf(sy));
             }
 
             SwitchCompat swStroke = getView().findViewById(R.id.sw_stroke);
@@ -915,7 +1005,7 @@ public class StudioFragment extends Fragment {
             int sw2 = (int) t.optDouble("strokeWidth", 0);
             if (seekStrokeW != null) {
                 seekStrokeW.setProgress(Math.min(50, Math.max(0, sw2)));
-                tvStrokeW.setText(String.valueOf(sw2));
+                if (tvStrokeW != null) tvStrokeW.setText(String.valueOf(sw2));
             }
 
             InlineColorPicker cpStroke = getView().findViewById(R.id.color_picker_stroke);
@@ -937,7 +1027,7 @@ public class StudioFragment extends Fragment {
             int mo = (int) (t.optDouble("maskOpacity", 1.0) * 100);
             if (seekMask != null) {
                 seekMask.setProgress(Math.min(100, Math.max(0, mo)));
-                tvMask.setText(mo + "%");
+                if (tvMask != null) tvMask.setText(mo + "%");
             }
 
             SeekBar seekGlow = getView().findViewById(R.id.seek_glow_radius);
@@ -945,7 +1035,7 @@ public class StudioFragment extends Fragment {
             int gr = (int) t.optDouble("glowRadius", 0);
             if (seekGlow != null) {
                 seekGlow.setProgress(Math.min(200, Math.max(0, gr)));
-                tvGlow.setText(String.valueOf(gr));
+                if (tvGlow != null) tvGlow.setText(String.valueOf(gr));
             }
 
             InlineColorPicker cpGlow = getView().findViewById(R.id.color_picker_glow);
@@ -963,7 +1053,7 @@ public class StudioFragment extends Fragment {
             if (st == null) return v;
             JSONObject effectiveTime = st.getEffectiveTime();
 
-            // Shadow Toggle
+            // ── Shadow Toggle ──
             SwitchCompat swShadow = v.findViewById(R.id.sw_shadow);
             View shadowCtrl = v.findViewById(R.id.layout_shadow_controls);
             boolean initShad = effectiveTime.optBoolean("shadowEnabled", false);
@@ -982,7 +1072,7 @@ public class StudioFragment extends Fragment {
                 st.broadcastChange();
             });
 
-            // Shadow Opacity
+            // ── Shadow Opacity ──
             SeekBar seekShOp = v.findViewById(R.id.seek_shadow_opacity);
             TextView tvShOp = v.findViewById(R.id.tv_shadow_opacity_val);
             int initShOp = (int) (effectiveTime.optDouble("shadowOpacity", 1.0) * 100);
@@ -1002,10 +1092,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_shadow_opacity).setOnClickListener(b -> nudgeSeek(seekShOp, -1));
-            v.findViewById(R.id.btn_plus_shadow_opacity).setOnClickListener(b -> nudgeSeek(seekShOp, +1));
+            v.findViewById(R.id.btn_minus_shadow_opacity).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekShOp.getMax(), seekShOp.getProgress() - 1));
+                seekShOp.setProgress(next);
+                tvShOp.setText(next + "%");
+                StudioManager.setShadowOpacity(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_shadow_opacity).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekShOp.getMax(), seekShOp.getProgress() + 1));
+                seekShOp.setProgress(next);
+                tvShOp.setText(next + "%");
+                StudioManager.setShadowOpacity(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Shadow X
+            // ── Shadow X ──
             SeekBar seekSx = v.findViewById(R.id.seek_shadow_x);
             TextView tvSx = v.findViewById(R.id.tv_shadow_x_val);
             int initShadowX = (int) effectiveTime.optDouble("shadowX", 4);
@@ -1026,10 +1130,26 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_shadow_x).setOnClickListener(b -> nudgeSeek(seekSx, -1));
-            v.findViewById(R.id.btn_plus_shadow_x).setOnClickListener(b -> nudgeSeek(seekSx, +1));
+            v.findViewById(R.id.btn_minus_shadow_x).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSx.getMax(), seekSx.getProgress() - 1));
+                seekSx.setProgress(next);
+                int rv = next - 100;
+                tvSx.setText(String.valueOf(rv));
+                StudioManager.setShadowX(requireContext(), rv);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_shadow_x).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSx.getMax(), seekSx.getProgress() + 1));
+                seekSx.setProgress(next);
+                int rv = next - 100;
+                tvSx.setText(String.valueOf(rv));
+                StudioManager.setShadowX(requireContext(), rv);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Shadow Y
+            // ── Shadow Y ──
             SeekBar seekSy = v.findViewById(R.id.seek_shadow_y);
             TextView tvSy = v.findViewById(R.id.tv_shadow_y_val);
             int initShadowY = (int) effectiveTime.optDouble("shadowY", 4);
@@ -1050,10 +1170,26 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_shadow_y).setOnClickListener(b -> nudgeSeek(seekSy, -1));
-            v.findViewById(R.id.btn_plus_shadow_y).setOnClickListener(b -> nudgeSeek(seekSy, +1));
+            v.findViewById(R.id.btn_minus_shadow_y).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSy.getMax(), seekSy.getProgress() - 1));
+                seekSy.setProgress(next);
+                int rv = next - 100;
+                tvSy.setText(String.valueOf(rv));
+                StudioManager.setShadowY(requireContext(), rv);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_shadow_y).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSy.getMax(), seekSy.getProgress() + 1));
+                seekSy.setProgress(next);
+                int rv = next - 100;
+                tvSy.setText(String.valueOf(rv));
+                StudioManager.setShadowY(requireContext(), rv);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Stroke Toggle
+            // ── Stroke Toggle ──
             SwitchCompat swStroke = v.findViewById(R.id.sw_stroke);
             View strokeCtrl = v.findViewById(R.id.layout_stroke_controls);
             boolean initStroke = effectiveTime.optBoolean("strokeEnabled", false);
@@ -1076,7 +1212,7 @@ public class StudioFragment extends Fragment {
                 st.broadcastChange();
             });
 
-            // Stroke Width
+            // ── Stroke Width ──
             SeekBar seekStrokeW = v.findViewById(R.id.seek_stroke_w);
             TextView tvStrokeW = v.findViewById(R.id.tv_stroke_w_val);
             int initSW = (int) effectiveTime.optDouble("strokeWidth", 0);
@@ -1096,8 +1232,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_stroke_w).setOnClickListener(b -> nudgeSeek(seekStrokeW, -1));
-            v.findViewById(R.id.btn_plus_stroke_w).setOnClickListener(b -> nudgeSeek(seekStrokeW, +1));
+            v.findViewById(R.id.btn_minus_stroke_w).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekStrokeW.getMax(), seekStrokeW.getProgress() - 1));
+                seekStrokeW.setProgress(next);
+                tvStrokeW.setText(String.valueOf(next));
+                StudioManager.setStrokeWidth(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_stroke_w).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekStrokeW.getMax(), seekStrokeW.getProgress() + 1));
+                seekStrokeW.setProgress(next);
+                tvStrokeW.setText(String.valueOf(next));
+                StudioManager.setStrokeWidth(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // Stroke target
             RadioGroup rgTarget = v.findViewById(R.id.rg_stroke_target);
@@ -1136,7 +1286,7 @@ public class StudioFragment extends Fragment {
                 });
             }
 
-            // Mask Opacity
+            // ── Mask Opacity ──
             SeekBar seekMask = v.findViewById(R.id.seek_mask_opacity);
             TextView tvMask = v.findViewById(R.id.tv_mask_opacity_val);
             int initMask = (int) (effectiveTime.optDouble("maskOpacity", 1.0) * 100);
@@ -1156,10 +1306,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_mask_opacity).setOnClickListener(b -> nudgeSeek(seekMask, -1));
-            v.findViewById(R.id.btn_plus_mask_opacity).setOnClickListener(b -> nudgeSeek(seekMask, +1));
+            v.findViewById(R.id.btn_minus_mask_opacity).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekMask.getMax(), seekMask.getProgress() - 1));
+                seekMask.setProgress(next);
+                tvMask.setText(next + "%");
+                StudioManager.setMaskOpacity(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_mask_opacity).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekMask.getMax(), seekMask.getProgress() + 1));
+                seekMask.setProgress(next);
+                tvMask.setText(next + "%");
+                StudioManager.setMaskOpacity(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Glow Radius
+            // ── Glow Radius ──
             SeekBar seekGlow = v.findViewById(R.id.seek_glow_radius);
             TextView tvGlow = v.findViewById(R.id.tv_glow_radius_val);
             int initGlow = (int) effectiveTime.optDouble("glowRadius", 0);
@@ -1178,8 +1342,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_glow_radius).setOnClickListener(b -> nudgeSeek(seekGlow, -1));
-            v.findViewById(R.id.btn_plus_glow_radius).setOnClickListener(b -> nudgeSeek(seekGlow, +1));
+            v.findViewById(R.id.btn_minus_glow_radius).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekGlow.getMax(), seekGlow.getProgress() - 1));
+                seekGlow.setProgress(next);
+                tvGlow.setText(String.valueOf(next));
+                StudioManager.setGlowRadius(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_glow_radius).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekGlow.getMax(), seekGlow.getProgress() + 1));
+                seekGlow.setProgress(next);
+                tvGlow.setText(String.valueOf(next));
+                StudioManager.setGlowRadius(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // Glow Color
             InlineColorPicker cpGlow = v.findViewById(R.id.color_picker_glow);
@@ -1213,11 +1391,6 @@ public class StudioFragment extends Fragment {
         public void onPause() {
             super.onPause();
             StudioFragment.unregisterResetListener(this);
-        }
-
-        private void nudgeSeek(@Nullable SeekBar seek, int delta) {
-            if (seek == null) return;
-            seek.setProgress(Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta)));
         }
 
         @Override
@@ -1274,8 +1447,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_curve).setOnClickListener(b -> nudgeSeek(seekCurve, -1));
-            v.findViewById(R.id.btn_plus_curve).setOnClickListener(b -> nudgeSeek(seekCurve, +1));
+            v.findViewById(R.id.btn_minus_curve).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekCurve.getMax(), seekCurve.getProgress() - 1));
+                seekCurve.setProgress(next);
+                int pct = next - 100;
+                tvCurve.setText(pct + "%");
+                StudioManager.setCurvature(requireContext(), pct / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_curve).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekCurve.getMax(), seekCurve.getProgress() + 1));
+                seekCurve.setProgress(next);
+                int pct = next - 100;
+                tvCurve.setText(pct + "%");
+                StudioManager.setCurvature(requireContext(), pct / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Rotation ──
             SeekBar seekRot = v.findViewById(R.id.seek_rot);
@@ -1298,8 +1487,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_rot).setOnClickListener(b -> nudgeSeek(seekRot, -1));
-            v.findViewById(R.id.btn_plus_rot).setOnClickListener(b -> nudgeSeek(seekRot, +1));
+            v.findViewById(R.id.btn_minus_rot).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekRot.getMax(), seekRot.getProgress() - 1));
+                seekRot.setProgress(next);
+                float d = next - 180f;
+                tvRot.setText((int) d + "°");
+                StudioManager.setRotation(requireContext(), d);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_rot).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekRot.getMax(), seekRot.getProgress() + 1));
+                seekRot.setProgress(next);
+                float d = next - 180f;
+                tvRot.setText((int) d + "°");
+                StudioManager.setRotation(requireContext(), d);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Stretch X ──
             SeekBar seekSx = v.findViewById(R.id.seek_sx);
@@ -1321,8 +1526,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_sx).setOnClickListener(b -> nudgeSeek(seekSx, -1));
-            v.findViewById(R.id.btn_plus_sx).setOnClickListener(b -> nudgeSeek(seekSx, +1));
+            v.findViewById(R.id.btn_minus_sx).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSx.getMax(), seekSx.getProgress() - 1));
+                seekSx.setProgress(next);
+                tvSx.setText(next + "%");
+                StudioManager.setStretchX(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_sx).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSx.getMax(), seekSx.getProgress() + 1));
+                seekSx.setProgress(next);
+                tvSx.setText(next + "%");
+                StudioManager.setStretchX(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Stretch Y ──
             SeekBar seekSy = v.findViewById(R.id.seek_sy);
@@ -1344,8 +1563,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_sy).setOnClickListener(b -> nudgeSeek(seekSy, -1));
-            v.findViewById(R.id.btn_plus_sy).setOnClickListener(b -> nudgeSeek(seekSy, +1));
+            v.findViewById(R.id.btn_minus_sy).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSy.getMax(), seekSy.getProgress() - 1));
+                seekSy.setProgress(next);
+                tvSy.setText(next + "%");
+                StudioManager.setStretchY(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_sy).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSy.getMax(), seekSy.getProgress() + 1));
+                seekSy.setProgress(next);
+                tvSy.setText(next + "%");
+                StudioManager.setStretchY(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Skew H ──
             SeekBar seekSH = v.findViewById(R.id.seek_skewh);
@@ -1367,8 +1600,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_skewh).setOnClickListener(b -> nudgeSeek(seekSH, -1));
-            v.findViewById(R.id.btn_plus_skewh).setOnClickListener(b -> nudgeSeek(seekSH, +1));
+            v.findViewById(R.id.btn_minus_skewh).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSH.getMax(), seekSH.getProgress() - 1));
+                seekSH.setProgress(next);
+                tvSH.setText((next - 200) + "%");
+                StudioManager.setSkewH(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_skewh).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSH.getMax(), seekSH.getProgress() + 1));
+                seekSH.setProgress(next);
+                tvSH.setText((next - 200) + "%");
+                StudioManager.setSkewH(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Skew V ──
             SeekBar seekSV = v.findViewById(R.id.seek_skewv);
@@ -1390,8 +1637,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_skewv).setOnClickListener(b -> nudgeSeek(seekSV, -1));
-            v.findViewById(R.id.btn_plus_skewv).setOnClickListener(b -> nudgeSeek(seekSV, +1));
+            v.findViewById(R.id.btn_minus_skewv).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSV.getMax(), seekSV.getProgress() - 1));
+                seekSV.setProgress(next);
+                tvSV.setText((next - 200) + "%");
+                StudioManager.setSkewV(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_skewv).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekSV.getMax(), seekSV.getProgress() + 1));
+                seekSV.setProgress(next);
+                tvSV.setText((next - 200) + "%");
+                StudioManager.setSkewV(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Bottom Skew ──
             SeekBar seekBH = v.findViewById(R.id.seek_skewbh);
@@ -1413,8 +1674,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_skewbh).setOnClickListener(b -> nudgeSeek(seekBH, -1));
-            v.findViewById(R.id.btn_plus_skewbh).setOnClickListener(b -> nudgeSeek(seekBH, +1));
+            v.findViewById(R.id.btn_minus_skewbh).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekBH.getMax(), seekBH.getProgress() - 1));
+                seekBH.setProgress(next);
+                tvBH.setText((next - 200) + "%");
+                StudioManager.setSkewBottomH(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_skewbh).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekBH.getMax(), seekBH.getProgress() + 1));
+                seekBH.setProgress(next);
+                tvBH.setText((next - 200) + "%");
+                StudioManager.setSkewBottomH(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Shear V ──
             SeekBar seekLV = v.findViewById(R.id.seek_skewlv);
@@ -1436,8 +1711,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_skewlv).setOnClickListener(b -> nudgeSeek(seekLV, -1));
-            v.findViewById(R.id.btn_plus_skewlv).setOnClickListener(b -> nudgeSeek(seekLV, +1));
+            v.findViewById(R.id.btn_minus_skewlv).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekLV.getMax(), seekLV.getProgress() - 1));
+                seekLV.setProgress(next);
+                tvLV.setText((next - 200) + "%");
+                StudioManager.setSkewLeftV(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_skewlv).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekLV.getMax(), seekLV.getProgress() + 1));
+                seekLV.setProgress(next);
+                tvLV.setText((next - 200) + "%");
+                StudioManager.setSkewLeftV(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             // ── Left Skew ──
             SeekBar seekLO = v.findViewById(R.id.seek_skewlo);
@@ -1459,8 +1748,22 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_skewlo).setOnClickListener(b -> nudgeSeek(seekLO, -1));
-            v.findViewById(R.id.btn_plus_skewlo).setOnClickListener(b -> nudgeSeek(seekLO, +1));
+            v.findViewById(R.id.btn_minus_skewlo).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekLO.getMax(), seekLO.getProgress() - 1));
+                seekLO.setProgress(next);
+                tvLO.setText((next - 200) + "%");
+                StudioManager.setSkewLeftOnly(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_skewlo).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekLO.getMax(), seekLO.getProgress() + 1));
+                seekLO.setProgress(next);
+                tvLO.setText((next - 200) + "%");
+                StudioManager.setSkewLeftOnly(requireContext(), (next - 200) / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             return v;
         }
@@ -1478,11 +1781,6 @@ public class StudioFragment extends Fragment {
         public void onPause() {
             super.onPause();
             StudioFragment.unregisterResetListener(this);
-        }
-
-        private void nudgeSeek(@Nullable SeekBar seek, int delta) {
-            if (seek == null) return;
-            seek.setProgress(Math.max(0, Math.min(seek.getMax(), seek.getProgress() + delta)));
         }
 
         @Override
@@ -1503,7 +1801,7 @@ public class StudioFragment extends Fragment {
             int size = (int) d.optDouble("size", 40);
             if (seekDs != null) {
                 seekDs.setProgress(Math.min(200, Math.max(0, size)));
-                tvDs.setText(size + "sp");
+                if (tvDs != null) tvDs.setText(size + "sp");
             }
 
             SeekBar seekDx = getView().findViewById(R.id.seek_date_x);
@@ -1511,7 +1809,7 @@ public class StudioFragment extends Fragment {
             int x = (int) (d.optDouble("x", 0.5) * 100);
             if (seekDx != null) {
                 seekDx.setProgress(Math.min(100, Math.max(0, x)));
-                tvDx.setText(x + "%");
+                if (tvDx != null) tvDx.setText(x + "%");
             }
 
             SeekBar seekDy = getView().findViewById(R.id.seek_date_y);
@@ -1519,7 +1817,7 @@ public class StudioFragment extends Fragment {
             int y = (int) (d.optDouble("y", 0.75) * 100);
             if (seekDy != null) {
                 seekDy.setProgress(Math.min(100, Math.max(0, y)));
-                tvDy.setText(y + "%");
+                if (tvDy != null) tvDy.setText(y + "%");
             }
 
             SeekBar seekDr = getView().findViewById(R.id.seek_date_rot);
@@ -1527,7 +1825,7 @@ public class StudioFragment extends Fragment {
             float rot = (float) d.optDouble("rotation", 0);
             if (seekDr != null) {
                 seekDr.setProgress((int) (rot + 180));
-                tvDr.setText((int) rot + "°");
+                if (tvDr != null) tvDr.setText((int) rot + "°");
             }
         }
 
@@ -1558,7 +1856,7 @@ public class StudioFragment extends Fragment {
                 st.broadcastChange();
             });
 
-            // Font Size
+            // ── Date Font Size ──
             SeekBar seekDs = v.findViewById(R.id.seek_date_size);
             TextView tvDs = v.findViewById(R.id.tv_date_size_val);
             int initDs = (int) effectiveDate.optDouble("size", 40);
@@ -1577,10 +1875,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_date_size).setOnClickListener(b -> nudgeSeek(seekDs, -1));
-            v.findViewById(R.id.btn_plus_date_size).setOnClickListener(b -> nudgeSeek(seekDs, +1));
+            v.findViewById(R.id.btn_minus_date_size).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDs.getMax(), seekDs.getProgress() - 1));
+                seekDs.setProgress(next);
+                tvDs.setText(next + "sp");
+                StudioManager.setDateFontSize(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_date_size).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDs.getMax(), seekDs.getProgress() + 1));
+                seekDs.setProgress(next);
+                tvDs.setText(next + "sp");
+                StudioManager.setDateFontSize(requireContext(), next);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Date X
+            // ── Date X ──
             SeekBar seekDx = v.findViewById(R.id.seek_date_x);
             TextView tvDx = v.findViewById(R.id.tv_date_x_val);
             int initDx = (int) (effectiveDate.optDouble("x", 0.5) * 100);
@@ -1599,10 +1911,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_date_x).setOnClickListener(b -> nudgeSeek(seekDx, -1));
-            v.findViewById(R.id.btn_plus_date_x).setOnClickListener(b -> nudgeSeek(seekDx, +1));
+            v.findViewById(R.id.btn_minus_date_x).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDx.getMax(), seekDx.getProgress() - 1));
+                seekDx.setProgress(next);
+                tvDx.setText(next + "%");
+                StudioManager.setDatePosX(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_date_x).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDx.getMax(), seekDx.getProgress() + 1));
+                seekDx.setProgress(next);
+                tvDx.setText(next + "%");
+                StudioManager.setDatePosX(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Date Y
+            // ── Date Y ──
             SeekBar seekDy = v.findViewById(R.id.seek_date_y);
             TextView tvDy = v.findViewById(R.id.tv_date_y_val);
             int initDy = (int) (effectiveDate.optDouble("y", 0.75) * 100);
@@ -1621,10 +1947,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_date_y).setOnClickListener(b -> nudgeSeek(seekDy, -1));
-            v.findViewById(R.id.btn_plus_date_y).setOnClickListener(b -> nudgeSeek(seekDy, +1));
+            v.findViewById(R.id.btn_minus_date_y).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDy.getMax(), seekDy.getProgress() - 1));
+                seekDy.setProgress(next);
+                tvDy.setText(next + "%");
+                StudioManager.setDatePosY(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_date_y).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDy.getMax(), seekDy.getProgress() + 1));
+                seekDy.setProgress(next);
+                tvDy.setText(next + "%");
+                StudioManager.setDatePosY(requireContext(), next / 100f);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
-            // Date Rotation
+            // ── Date Rotation ──
             SeekBar seekDr = v.findViewById(R.id.seek_date_rot);
             TextView tvDr = v.findViewById(R.id.tv_date_rot_val);
             float initDr = (float) effectiveDate.optDouble("rotation", 0);
@@ -1644,8 +1984,24 @@ public class StudioFragment extends Fragment {
                 st.scheduleRefresh();
                 st.broadcastChange();
             });
-            v.findViewById(R.id.btn_minus_date_rot).setOnClickListener(b -> nudgeSeek(seekDr, -1));
-            v.findViewById(R.id.btn_plus_date_rot).setOnClickListener(b -> nudgeSeek(seekDr, +1));
+            v.findViewById(R.id.btn_minus_date_rot).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDr.getMax(), seekDr.getProgress() - 1));
+                seekDr.setProgress(next);
+                float d2 = next - 180f;
+                tvDr.setText((int) d2 + "°");
+                StudioManager.setDateRotation(requireContext(), d2);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
+            v.findViewById(R.id.btn_plus_date_rot).setOnClickListener(b -> {
+                int next = Math.max(0, Math.min(seekDr.getMax(), seekDr.getProgress() + 1));
+                seekDr.setProgress(next);
+                float d2 = next - 180f;
+                tvDr.setText((int) d2 + "°");
+                StudioManager.setDateRotation(requireContext(), d2);
+                st.scheduleRefresh();
+                st.broadcastChange();
+            });
 
             return v;
         }

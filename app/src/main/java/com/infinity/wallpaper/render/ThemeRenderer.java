@@ -523,7 +523,7 @@ public class ThemeRenderer {
 
             // ── Apply time-only transforms (stretch/skew/rotation — not gyro) ──
             canvas.save();
-            if (stretchX != 1f || stretchY != 1f) canvas.scale(stretchX, stretchY, baseX, offY);
+            if (stretchX != 1f || stretchY != 1f) canvas.scale(stretchX, stretchY, baseX, baseY);
 
             // 3D Skew (tilt) instead of 2D skew:
             // skewH tilts around X axis (top/back vs bottom/front) => XY -> XZ feel
